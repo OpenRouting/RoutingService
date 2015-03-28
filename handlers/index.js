@@ -7,8 +7,13 @@ var express = require('express'),
     documentationController = controllerFactory.getDocumentationController();
 
 exports.indexHandler = function (req, res) {
-    documentationController.documentation(function(docs){
-        res.json(docs);
+    documentationController.documentation(function (docs) {
+        if (req.params.f === 'json') {
+            res.json(docs);
+        } else {
+            res.render('documentation', {title:'Open Routing', docs:docs});
+        }
+
     });
 
 };
