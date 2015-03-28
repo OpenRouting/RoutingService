@@ -3,14 +3,27 @@
 
 extends layout
 block content
-   h1= title
+   header
+      h1= title
 
    each route in docs
       section
          header
-            a(href=route.route)=route.title
+            h2
+               span=route.title+' - '
+               a(href=route.route)=route.route
          div
             p=route.description
+
+         if (route.input != null)
+            div
+               h3='Input'
+               code=JSON.stringify(route.input, null, 4)
+
+         if (route.response != null)
+            div
+               h3='Response'
+               code=JSON.stringify(route.response, null, 4)
 
 
 

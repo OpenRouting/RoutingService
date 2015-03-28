@@ -8,23 +8,55 @@ exports.DocumentationModel = function(){
         {
             route: '/api/v1',
             title: 'Documentation',
-            description: 'documentation!'
+            description: 'Documentation about the routes.'
         },{
             route: '/api/v1/table',
             title: 'Tables',
-            description: 'tables!'
+            description: 'Returns a list of tables included in the service.',
+            response: {
+                tables: [
+                    {
+                        name: ':table name',
+                        fields: [
+                            {
+                                'name': ':field name',
+                                'type': ':field type'
+                            }
+                        ]
+                    }
+                ]
+            }
         },{
             route: '/api/v1/table/:table',
-            title: 'Tables',
-            description: 'tables!'
+            title: 'Table',
+            description: 'Returns properties of a single table object.!',
+            response: {
+                tables: [
+                    {
+                        name: ':table name',
+                        fields: [
+                            {
+                                'name': ':field name',
+                                'type': ':field type'
+                            }
+                        ]
+                    }
+                ]
+            }
         },{
             route: '/api/v1/route',
-            title: 'route',
-            description: 'route!'
+            title: 'Route',
+            description: 'route!',
+            response: {
+
+            }
         },{
             route: '/api/v1/direction',
             title: 'Direction',
-            description: 'direction!'
+            description: 'direction!',
+            response: {
+
+            }
         }
     ]
 };
