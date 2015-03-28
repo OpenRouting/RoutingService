@@ -17,6 +17,15 @@ module.exports = function (grunt) {
         file: 'bin/www'
       }
     },
+    jasmine_node: {
+      match: '.',
+      extensions: 'js',
+      specNameMatcher: 'unit',
+      projectRoot: ".",
+      files: ['src/**/*.unit.js'],
+      all: ['src/**/*.unit.js']
+    },
+
     less: {
       dist: {
         files: {
@@ -35,7 +44,7 @@ module.exports = function (grunt) {
           'app.js',
           'routes/*.js'
         ],
-        tasks: ['develop', 'delayed-livereload']
+        tasks: [ 'test', 'develop', 'delayed-livereload']
       },
       js: {
         files: ['public/js/*.js'],
@@ -79,6 +88,8 @@ module.exports = function (grunt) {
         });
     }, 500);
   });
+
+  grunt.registerTask('test', ['jasmine_node']);
 
   grunt.registerTask('default', [
     'less',
