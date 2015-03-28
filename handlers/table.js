@@ -14,4 +14,4 @@ exports.listTableHandler = function (req, res) {
         "type": "FeatureCollection",
         "features": 'aasdfasdf'
     });
-}
+};
