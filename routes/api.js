@@ -13,9 +13,9 @@ var router = express.Router();
 /* GET home page. */
 
 router.get('/', indexHandler);
-router.get('/route', routeHandler);
-router.get('/direction', directionHandler);
-router.get('/table', listTableHandler);
-router.get('/table/:table', tableHandler);
+router.get('/route(/)?', routeHandler);
+router.get('/direction(/)?', directionHandler);
+router.get('/table(/)?', listTableHandler);
+router.get('/table/:table(/)?', tableHandler);
 
 module.exports = router;
