@@ -15,24 +15,21 @@ exports.TableModel = function(tableConfig, databaseConfig){
                                         databaseConfig.username,
                                         databaseConfig.password,
                                         databaseConfig.hostname,
-                                        databaseConfig.database)
+                                        databaseConfig.database);
 };
-exports.TableModel.prototype.query = function(query, callback){
+exports.TableModel.prototype.query = function(query, parameters, callback){
     pg.connect(this.connectionString, function(err, client, done) {
         if(err) {
-            return console.error('error fetching client from pool', err);
+            callback('error fetching client from pool' + err);
         }
-        client.query('SELECT $1::int AS number', ['1'], function(err, result) {
-            //call `done()` to release the client back to the pool
+        client.query(query, parameters, function(err, result) {
             done();
-
-            if(err) {
-                return console.error('error running query', err);
-            }
-            console.log(result.rows[0].number);
-            //output: 1
+            callback(err, result);
             client.end();
-            callback(result.rows[0].number);
         });
     });
+};
+
+exports.TableModel.prototype.getRecords = function(callback){
+    this.query('SELECT * FROM ' + this.table, [], callback)
 };

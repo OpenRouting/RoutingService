@@ -8,7 +8,7 @@ describe("TableModel Tests", function() {
 
     it("should be able to instantiate", function() {
         var tableConfig = {
-            table: 'test',
+            name: 'test',
             fields: []
         };
         var databaseConfig = {
@@ -21,9 +21,9 @@ describe("TableModel Tests", function() {
         expect(new TableModel(tableConfig, databaseConfig)).toBeDefined();
     });
 
-    it("should be able to perform a select-all query", function(){
+    it("should be able to get all records", function(){
         var tableConfig = {
-            table: 'test',
+            name: 'osm.planet_osm_line',
             fields: []
         };
         var databaseConfig = {
@@ -34,11 +34,11 @@ describe("TableModel Tests", function() {
         };
 
         var table = new TableModel(tableConfig, databaseConfig);
-
-        console.log(table.connectionString);
-
-        table.query('asdf', function(err, data){
-            console.log(data);
+        table.getRecords(function(err, data){
+            if (err){
+                console.log(err);
+            }
+            expect(data.rows.length).toBeGreaterThan(0);
         });
     });
 

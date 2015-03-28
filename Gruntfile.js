@@ -19,11 +19,18 @@ module.exports = function (grunt) {
     },
     jasmine_node: {
       match: '.',
+      matchall: [],
+      specNameMatcher: 'spec',
       extensions: 'js',
-      specNameMatcher: 'unit',
-      projectRoot: ".",
-      files: ['src/**/*.unit.js'],
-      all: ['src/**/*.unit.js']
+      showColors: true,
+      includeStackTrace: true,
+      useHelpers: false,
+      jUnit: {
+        report: false,
+        savePath : "./reports/",
+        useDotNotation: true,
+        consolidate: true
+      }
     },
 
     less: {
