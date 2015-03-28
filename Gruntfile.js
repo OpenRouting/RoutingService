@@ -17,19 +17,16 @@ module.exports = function (grunt) {
         file: 'bin/www'
       }
     },
-    jasmine_node: {
-      match: '.',
-      matchall: [],
-      specNameMatcher: 'spec',
-      extensions: 'js',
-      showColors: true,
-      includeStackTrace: true,
-      useHelpers: false,
-      jUnit: {
-        report: false,
-        savePath : "./reports/",
-        useDotNotation: true,
-        consolidate: true
+
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'spec',
+          captureFile: 'results.txt', // Optionally capture the reporter output to a file
+          quiet: false, // Optionally suppress output to standard out (defaults to false)
+          clearRequireCache: false // Optionally clear the require cache before running tests (defaults to false)
+        },
+        src: ['test/**/*.js']
       }
     },
 
@@ -96,7 +93,7 @@ module.exports = function (grunt) {
     }, 500);
   });
 
-  grunt.registerTask('test', ['jasmine_node']);
+  grunt.registerTask('test', ['mochaTest']);
 
   grunt.registerTask('default', [
     'less',
