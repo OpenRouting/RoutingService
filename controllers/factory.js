@@ -11,5 +11,5 @@ exports.ControllerFactory = function(modelFactory) {
 
 exports.ControllerFactory.prototype.getDocumentationController = function(){
     "use strict";
-    return new DocumentationController();
+    return new DocumentationController(this.modelFactory);
 };
