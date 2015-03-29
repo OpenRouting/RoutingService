@@ -41,5 +41,12 @@ section header h2 a {
 .checkgroup {
   background: #EEEEEE;
   border-radius: 5px;
+  border: 1px solid #CCCCCC;
   padding: 10px;
+}
+.checkgroup input[type=checkbox] {
+  margin-top: 0;
+}
+.checkgroup .checkbox-inline {
+  padding-top: 0;
 }
