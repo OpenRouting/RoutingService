@@ -82,3 +82,12 @@ exports.TableModel.prototype.query = function(query, parameters, callback){
 exports.TableModel.prototype.getRecords = function(callback){
     this.query(util.format('SELECT %s FROM %s', this.getFieldNames().join(','), this.table), [], callback)
 };
+
+exports.TableModel.prototype.intersects = function(geometry, callback){
+    this.query(util.format('SELECT %s FROM %s WHERE ST_3DIntersects(%s, ST_GeomFromGeoJSON(%s))',
+        this.getFieldNames().join(','),
+        this.table,
+        this.getSpatialField(),
+        JSON.stringify(geometry)
+    ), callback)
+};
