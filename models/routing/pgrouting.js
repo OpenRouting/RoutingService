@@ -8,6 +8,8 @@ var express = require('express'),
     async = require('async');
 
 exports.RouteModel = function(databaseConfig){
+    this.fields = [];
+    this.databaseConfig = databaseConfig;
     this.connectionString = util.format('postgres://%s:%s@%s/%s',
         databaseConfig.username,
         databaseConfig.password,
@@ -36,6 +38,36 @@ function RouteFeature(routeFeatureInfo){
     }
 }
 
+
+/**
+ * Returns all of the field names
+ * @returns {Array}
+ */
+exports.RouteModel.prototype.getFieldNames = function(){
+    var fieldNames = [];
+    for (var f in this.fields){
+        if (['point', 'line', 'polygon'].indexOf(this.fields[f].type) >= 0){
+            fieldNames.push(util.format('ST_AsGeoJson(%s) %s', this.fields[f].name, this.fields[f].name));
+        } else {
+            fieldNames.push(this.fields[f].name);
+        }
+    }
+    return fieldNames;
+};
+
+/**
+ * Returns the (first) spatial field
+ * @returns {*}
+ */
+exports.RouteModel.prototype.getSpatialField = function() {
+    for (var f in this.fields){
+        if (['point', 'line', 'polygon'].indexOf(this.fields[f].type) >= 0){
+            return this.fields[f].name;
+        }
+    }
+    return false;
+};
+
 /**
  * Executes a query against the database.
  * @param query - Query String
@@ -55,7 +87,7 @@ exports.RouteModel.prototype.query = function(query, parameters, callback){
             }
             else {
                 var spatialField = self.getSpatialField();
-                if (spatialField != null){
+                if (spatialField && spatialField != null){
                     var formattedRows = [];
                     for (var i in result.rows){
                         var record = {
@@ -93,14 +125,31 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
     async.waterfall([
         // Get Point locations on network
         function(callback){
-            callback();
+            async.map(points.features, function(item, callback){
+                var query = util.format("SELECT routing.get_waypoint(ST_GeomFromGeoJSON('%s'))", JSON.stringify(item.geometry));
+                self.query(query, [], callback);
+            }, function(err, results){
+                if (err == null){
+                    var out = [];
+                    for (var i in results){
+                        out.push(results[i][0].get_waypoint);
+                    }
+                    callback(undefined, out);
+                } else {
+                    callback(err);
+                }
+            });
         },
         // Build Route
         function(points, callback){
-            callback();
+            callback(undefined, points);
         }
     ], function(err, data){
-        callback({message: "sample, asdf, sample"});
+        if (err == null){
+            callback(data);
+        } else {
+            callback({message: err})
+        }
     });
 
 
