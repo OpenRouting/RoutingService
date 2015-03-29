@@ -10,6 +10,6 @@ exports.RouteController = function(modelFactory){
     };
 };
 
-exports.RouteController.prototype.getRoute = function(type, points, restrictions, callback){
-    this.routeModels[type].buildRoute(points, restrictions, callback);
+exports.RouteController.prototype.getRoute = function(routeType, points, restrictions, callback){
+    this.routeModels[routeType].buildRoute(points, restrictions, callback);
 };
