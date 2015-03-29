@@ -9,24 +9,24 @@ exports.settings = {
         database: process.env.database || 'osm'
     },
     tables: {
-        planet_osm_point: {
-            name: 'osm.planet_osm_point',
+        ways: {
+            name: 'routing.ways',
             fields: [{
-                name: 'osm_id',
+                name: 'gid',
                 type: 'int'
             },{
-                name: 'way',
-                type: 'point'
+                name: 'the_geom',
+                type: 'line'
             }]
         },
-        planet_osm_line: {
-            name: 'osm.planet_osm_line',
+        ways_vertices_pgr: {
+            name: 'routing.ways_vertices_pgr',
             fields: [{
-                name: 'osm_id',
+                name: 'id',
                 type: 'int'
             },{
-                name: 'way',
-                type: 'line'
+                name: 'the_geom',
+                type: 'point'
             }]
         }
     }
