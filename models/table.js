@@ -6,6 +6,25 @@ var express = require('express'),
     util = require('util'),
     pg = require('pg');
 
+/**
+ * Constructor for Table Objects
+ * @param tableConfig - Table Configuration object
+ * {
+ *  name: table Name,
+ *  fields: [{
+ *      name: field Name,
+ *      type: field Type
+ *  }]
+ * }
+ * @param databaseConfig - Database Configuration Object
+ * {
+ *  username: postgres Username,
+ *  password: postgres Password,
+ *  hostname: postgres Hostname,
+ *  database: postgres Database
+ *  }
+ * @constructor
+ */
 exports.TableModel = function(tableConfig, databaseConfig){
     var self = this;
 
@@ -18,6 +37,10 @@ exports.TableModel = function(tableConfig, databaseConfig){
                                         databaseConfig.database);
 };
 
+/**
+ * Returns all of the field names
+ * @returns {Array}
+ */
 exports.TableModel.prototype.getFieldNames = function(){
     var fieldNames = [];
     for (var f in this.fields){
@@ -30,6 +53,10 @@ exports.TableModel.prototype.getFieldNames = function(){
     return fieldNames;
 };
 
+/**
+ * Returns the (first) spatial field
+ * @returns {*}
+ */
 exports.TableModel.prototype.getSpatialField = function() {
     for (var f in this.fields){
         if (['point', 'line', 'polygon'].indexOf(this.fields[f].type) >= 0){
@@ -39,6 +66,12 @@ exports.TableModel.prototype.getSpatialField = function() {
     return false;
 };
 
+/**
+ * Executes a query against the database.
+ * @param query - Query String
+ * @param parameters - Query String Parameters
+ * @param callback
+ */
 exports.TableModel.prototype.query = function(query, parameters, callback){
     var self = this;
     pg.connect(this.connectionString, function(err, client, done) {
@@ -64,7 +97,6 @@ exports.TableModel.prototype.query = function(query, parameters, callback){
                         formattedRows.push(record);
                     }
 
-
                     callback(undefined, {
                         "type": "FeatureCollection",
                         "features": formattedRows
@@ -79,10 +111,19 @@ exports.TableModel.prototype.query = function(query, parameters, callback){
     });
 };
 
+/**
+ * Returns all records from a table
+ * @param callback
+ */
 exports.TableModel.prototype.getRecords = function(callback){
     this.query(util.format('SELECT %s FROM %s', this.getFieldNames().join(','), this.table), [], callback)
 };
 
+/**
+ * Performs 3D spatial intersect on source table against passed in geometry
+ * @param geometry - GeoJson formatted geometry
+ * @param callback
+ */
 exports.TableModel.prototype.intersects = function(geometry, callback){
     this.query(util.format('SELECT %s FROM %s WHERE ST_3DIntersects(%s, ST_GeomFromGeoJSON(%s))',
         this.getFieldNames().join(','),
