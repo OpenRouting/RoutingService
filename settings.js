@@ -11,7 +11,8 @@ exports.settings = {
     routing: {
         restrictions: {
             isPublic: 'Publicly Accessible',
-            isActive: 'Active'
+            isActive: 'Active',
+            isEmergency: 'Emergency Accessibility'
         }
     },
     tables: {

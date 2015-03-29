@@ -17,8 +17,8 @@ block content
             label(for="routeRestrictions", class="col-sm-2 control-label")= 'Restrictions'
             div(class="col-sm-10")
                div(class="col-sm-12 checkgroup")
-                  each restriction, description in restrictions
-                     label(class='checkbox-inline col-sm-3')
+                  each description, restriction in restrictions
+                     label(class='checkbox-inline col-sm-6')
                            input(type="checkbox" value=restriction, name="restrictions")
                            span= description
 

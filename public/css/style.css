@@ -50,3 +50,9 @@ section header h2 a {
 .checkgroup .checkbox-inline {
   padding-top: 0;
 }
+.checkgroup .checkbox-inline + .checkbox-inline {
+  margin-left: 0;
+}
+.checkgroup label {
+  height: 28px;
+}
