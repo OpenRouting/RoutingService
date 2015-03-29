@@ -14,17 +14,20 @@ exports.ModelFactory.prototype.getDocumentationModel = function(){
     return new DocumentationModel();
 };
 
+exports.ModelFactory.prototype.getTableModel = function(table){
+    'use strict';
+    if (table == null){
+        throw 'Table not configured';
+    }
+
+    return new TableModel(settings.tables[table], settings.database);
+};
+
 exports.ModelFactory.prototype.getTableModels = function(){
     'use strict';
     var tableModels = {};
-    var databaseConfig = {
-        username: process.env.username || 'dev',
-        password: process.env.password || 'devP@a$$word',
-        hostname: process.env.hostname || 'localhost',
-        database: process.env.database || 'osm'
-    };
 
     for (var i in settings.tables){
-        tableModels.push(new TableModel(settings.tables[i], databaseConfig));
+        tableModels.push(new TableModel(settings.tables[i], settings.database));
     }
 };
