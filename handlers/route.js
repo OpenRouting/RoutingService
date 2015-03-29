@@ -6,6 +6,10 @@ var express = require('express'),
     controllerFactory = new ControllerFactory(),
     routeController = controllerFactory.getRouteController();
 
+exports.routeUIHandler = function (req, res) {
+    res.render('route', {title:'Routing Engine'});
+};
+
 exports.routeHandler = function (req, res) {
     var points = req.body.points;
     var restrictions = req.body.restrictions;
@@ -17,6 +21,5 @@ exports.routeHandler = function (req, res) {
         } else {
             res.status(400).json(err)
         }
-    })
-
+    });
 };

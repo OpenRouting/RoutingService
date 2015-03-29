@@ -88,10 +88,12 @@ exports.RouteModel.prototype.query = function(query, parameters, callback){
  * @param callback
  */
 exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback){
+    var self = this;
+
     async.waterfall([
         // Get Point locations on network
         function(callback){
-            callback('asdf')
+            callback();
         },
         // Build Route
         function(points, callback){
