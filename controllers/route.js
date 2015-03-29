@@ -5,10 +5,11 @@ var express = require('express'),
     settings = require('../settings').settings;
 
 exports.RouteController = function(modelFactory){
-    this.modelFactory = modelFactory;
-
+    this.routeModels = {
+        pgRouteModel: modelFactory.getRouteModel('pgrouting')
+    };
 };
 
-exports.RouteController.prototype.getRoute = function(points, restrictions){
-
+exports.RouteController.prototype.getRoute = function(type, points, restrictions, callback){
+    this.routeModels[type].buildRoute(points, restrictions, callback);
 };

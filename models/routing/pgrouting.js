@@ -23,7 +23,7 @@ exports.RouteModel = function(tableConfig, databaseConfig){
  * @param routeFeatureInfo
  * @constructor
  */
-exports.RouteModel.prototype.RouteFeature = function(routeFeatureInfo){
+function RouteFeature(routeFeatureInfo){
     this.type = 'Feature';
     this.geometry = {};
     this.properties = {
@@ -37,4 +37,9 @@ exports.RouteModel.prototype.RouteFeature = function(routeFeatureInfo){
             this.geometry = routeFeatureInfo.geometry;
         }
     }
+}
+
+exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback){
+
 };
+
