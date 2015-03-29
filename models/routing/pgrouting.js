@@ -6,11 +6,7 @@ var express = require('express'),
     util = require('util'),
     pg = require('pg');
 
-exports.RouteModel = function(tableConfig, databaseConfig){
-    var self = this;
-
-    this.table = tableConfig.name;
-    this.fields = tableConfig.fields;
+exports.RouteModel = function(databaseConfig){
     this.connectionString = util.format('postgres://%s:%s@%s/%s',
         databaseConfig.username,
         databaseConfig.password,
@@ -39,7 +35,13 @@ function RouteFeature(routeFeatureInfo){
     }
 }
 
+/**
+ *
+ * @param points - GeoJSON points
+ * @param restrictions - Array of restriction variables
+ * @param callback
+ */
 exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback){
-
+    callback({message: "sample, sample, sample"});
 };
 

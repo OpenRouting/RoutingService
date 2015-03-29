@@ -36,8 +36,8 @@ exports.ModelFactory.prototype.getTableModels = function(){
 exports.ModelFactory.prototype.getRouteModel = function(type){
     'use strict';
     if (type == null || type === 'pgrouting'){
-        return new PGRouteModel();
+        return new PGRouteModel(settings.database);
     } else {
-        return new PGRouteModel();
+        return new PGRouteModel(settings.database);
     }
 };
