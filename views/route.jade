@@ -6,6 +6,22 @@ block content
    header
       h1= title
 
-   section
-      form(name="solveRoute", action="/api/v1/route", method="post")
+   div(class="col-sm-offset-2 col-sm-8")
+      form(name="solveRoute", action="/api/v1/route", method="post", class="form-horizontal")
+         div(class="form-group")
+            label(for="routePoints", class="col-sm-2 control-label")= 'Points'
+            div(class="col-sm-10")
+               textarea(class="form-control", id="routePoints", placeholder="Insert GeoJSON points")
 
+         div(class="form-group")
+            label(for="routeRestrictions", class="col-sm-2 control-label")= 'Restrictions'
+            div(class="col-sm-10")
+               div(class="col-sm-12 checkgroup")
+                  each restriction, description in restrictions
+                     label(class='checkbox-inline col-sm-3')
+                           input(type="checkbox" value=restriction)
+                           span= description
+
+         div(class="form-group")
+            div(class="col-sm-offset-2 col-sm-10")
+               button(type="submit", class="btn btn-default")= 'Submit'

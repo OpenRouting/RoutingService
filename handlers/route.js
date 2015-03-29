@@ -4,10 +4,11 @@
 var express = require('express'),
     ControllerFactory = require('../controllers/factory.js').ControllerFactory,
     controllerFactory = new ControllerFactory(),
-    routeController = controllerFactory.getRouteController();
+    routeController = controllerFactory.getRouteController(),
+    settings = require('../settings').settings;
 
 exports.routeUIHandler = function (req, res) {
-    res.render('route', {title:'Routing Engine'});
+    res.render('route', {title:'Routing Engine', restrictions: settings.routing.restrictions});
 };
 
 exports.routeHandler = function (req, res) {

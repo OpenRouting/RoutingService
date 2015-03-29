@@ -8,6 +8,12 @@ exports.settings = {
         hostname: process.env.hostname || 'localhost',
         database: process.env.database || 'osm'
     },
+    routing: {
+        restrictions: {
+            asdf: 'asdf',
+            casd: 'casd'
+        }
+    },
     tables: {
         ways: {
             name: 'routing.ways',

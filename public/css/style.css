@@ -38,3 +38,8 @@ section header h2 a {
   line-height: 32px;
   color: #666666;
 }
+.checkgroup {
+  background: #EEEEEE;
+  border-radius: 5px;
+  padding: 10px;
+}
