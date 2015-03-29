@@ -10,8 +10,8 @@ exports.settings = {
     },
     routing: {
         restrictions: {
-            asdf: 'asdf',
-            casd: 'casd'
+            isPublic: 'Publicly Accessible',
+            isActive: 'Active'
         }
     },
     tables: {
