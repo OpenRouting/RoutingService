@@ -3,6 +3,7 @@
  */
 var DocumentationModel = require('./documentation').DocumentationModel,
     TableModel = require('./table').TableModel,
+    PGRouteModel = require('./routing/pgrouting').RouteModel,
     settings = require('../settings.js').settings;
 
 exports.ModelFactory = function() {
@@ -29,5 +30,14 @@ exports.ModelFactory.prototype.getTableModels = function(){
 
     for (var i in settings.tables){
         tableModels.push(new TableModel(settings.tables[i], settings.database));
+    }
+};
+
+exports.ModelFactory.prototype.getRouteModel = function(type){
+    'use strict';
+    if (type == null || type === 'pgrouting'){
+        return new PGRouteModel();
+    } else {
+        return new PGRouteModel();
     }
 };

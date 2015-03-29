@@ -3,6 +3,7 @@
  */
 var ModelFactory = require('../models/factory').ModelFactory,
     TableController = require('./table').TableController,
+    RouteController = require('./route').RouteController,
     DocumentationController = require('./documentation').DocumentationController;
 
 exports.ControllerFactory = function(modelFactory) {
@@ -18,4 +19,9 @@ exports.ControllerFactory.prototype.getDocumentationController = function(){
 exports.ControllerFactory.prototype.getTableController = function(){
     'use strict';
     return new TableController(this.modelFactory);
+};
+
+exports.ControllerFactory.prototype.getRouteController = function(){
+    'use strict';
+    return new RouteController(this.modelFactory);
 };
