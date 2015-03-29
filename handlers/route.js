@@ -12,15 +12,10 @@ exports.routeUIHandler = function (req, res) {
 };
 
 exports.routeHandler = function (req, res) {
-    var points = req.body.routepoints;
-    var restrictions = req.body.restrictions;
+    var points = JSON.parse(req.body.routepoints);
+    var restrictions = (typeof req.body.restrictions === 'string') ? [req.body.restrictions] : req.body.restrictions;
     var routeType = 'pgRouteModel';
-    console.log(req.params, req.body, req.query);
-    res.json({
-        points: points,
-        restrictions: restrictions
-    });
-    /*
+
     routeController.getRoute(routeType, points, restrictions, function(err, result){
         if (err == null){
             res.json(result);
@@ -28,5 +23,4 @@ exports.routeHandler = function (req, res) {
             res.status(400).json(err)
         }
     });
-    */
 };
