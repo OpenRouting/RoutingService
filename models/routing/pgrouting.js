@@ -26,7 +26,7 @@ function RouteFeature(routeFeatureInfo){
     this.type = 'Feature';
     this.geometry = {};
     this.properties = {
-
+        gid: undefined
     };
 
     for (var p in routeFeatureInfo){
@@ -38,81 +38,6 @@ function RouteFeature(routeFeatureInfo){
     }
 }
 
-
-/**
- * Returns all of the field names
- * @returns {Array}
- */
-exports.RouteModel.prototype.getFieldNames = function(){
-    var fieldNames = [];
-    for (var f in this.fields){
-        if (['point', 'line', 'polygon'].indexOf(this.fields[f].type) >= 0){
-            fieldNames.push(util.format('ST_AsGeoJson(%s) %s', this.fields[f].name, this.fields[f].name));
-        } else {
-            fieldNames.push(this.fields[f].name);
-        }
-    }
-    return fieldNames;
-};
-
-/**
- * Returns the (first) spatial field
- * @returns {*}
- */
-exports.RouteModel.prototype.getSpatialField = function() {
-    for (var f in this.fields){
-        if (['point', 'line', 'polygon'].indexOf(this.fields[f].type) >= 0){
-            return this.fields[f].name;
-        }
-    }
-    return false;
-};
-
-/**
- * Executes a query against the database.
- * @param query - Query String
- * @param parameters - Query String Parameters
- * @param callback
- */
-exports.RouteModel.prototype.query = function(query, parameters, callback){
-    var self = this;
-    pg.connect(this.connectionString, function(err, client, done) {
-        if(err) {
-            callback({message: 'error fetching client from pool' + err});
-        }
-        client.query(query, parameters, function(err, result) {
-            done();
-            if (err != null){
-                callback({message: err});
-            }
-            else {
-                var spatialField = self.getSpatialField();
-                if (spatialField && spatialField != null){
-                    var formattedRows = [];
-                    for (var i in result.rows){
-                        var record = {
-                            "type": "Feature",
-                            "geometry": JSON.parse(result.rows[i][spatialField]),
-                            "properties": result.rows[i]
-                        };
-                        delete record.properties[spatialField];
-                        formattedRows.push(record);
-                    }
-
-                    callback(undefined, {
-                        "type": "FeatureCollection",
-                        "features": formattedRows
-                    });
-
-                } else {
-                    callback(undefined, result.rows);
-                }
-            }
-            client.end();
-        });
-    });
-};
-
 /**
  *
  * @param points - GeoJSON points
@@ -122,36 +47,46 @@ exports.RouteModel.prototype.query = function(query, parameters, callback){
 exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback){
     var self = this;
 
-    async.waterfall([
-        // Get Point locations on network
-        function(callback){
-            async.map(points.features, function(item, callback){
+    pg.connect(this.connectionString, function(err, client, done) {
+        if(err) {
+            callback({message: 'error fetching client from pool' + err});
+        }
+        async.waterfall([function(cb){
+            async.map(points.features, function(item, cbeach){
                 var query = util.format("SELECT routing.get_waypoint(ST_GeomFromGeoJSON('%s'))", JSON.stringify(item.geometry));
-                self.query(query, [], callback);
-            }, function(err, results){
-                if (err == null){
-                    var out = [];
-                    for (var i in results){
-                        out.push(results[i][0].get_waypoint);
+                client.query(query, [], function(err, result) {
+                    if (err == null){
+                        cbeach(undefined, result.rows[0].get_waypoint);
+                    } else {
+                        cbeach(err);
                     }
-                    callback(undefined, out);
-                } else {
-                    callback(err);
-                }
-            });
-        },
-        // Build Route
-        function(points, callback){
-            callback(undefined, points);
-        }
-    ], function(err, data){
-        if (err == null){
-            callback(data);
-        } else {
-            callback({message: err})
-        }
-    });
+                })
 
+                }, cb);
+        }, function(points, cb){
+            var query = util.format("SELECT gid FROM routing.ways");
+            client.query(query, [], function(err, result){
+                if (err != null) cb(err);
+
+                var routes = [];
+                for (var r in result.rows){
+                    routes.push(new RouteFeature(result.rows[r]))
+                }
+                cb(undefined, routes);
+
+            });
+        }], function(err, data){
+
+            done();
+            client.end();
+
+            if (err == null){
+                callback(undefined, data);
+            } else {
+                callback(err);
+            }
+        });
+    });
 
 };
 
