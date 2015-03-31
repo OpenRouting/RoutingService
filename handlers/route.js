@@ -12,13 +12,23 @@ exports.routeUIHandler = function (req, res) {
 };
 
 exports.routeHandler = function (req, res) {
+
+    var restrictions;
+    var points;
+
     try {
-        var points = JSON.parse(req.body.routepoints);
+        points = JSON.parse(req.body.routepoints);
     } catch(err){
         res.status(400).json({message: 'Invalid GeoJson passed into routing service: ' + req.body.routepoints});
         return;
     }
-    var restrictions = (typeof req.body.restrictions === 'string') ? [req.body.restrictions] : req.body.restrictions;
+    if (req.body.restrictions == null) {
+        restrictions = [];
+    } else if (typeof req.body.restrictions === 'string'){
+        restrictions = [req.body.restrictions]
+    } else {
+        restrictions = req.body.restrictions
+    }
 
     if (restrictions != null || restrictions.length > 0){
         for (var r in restrictions){
