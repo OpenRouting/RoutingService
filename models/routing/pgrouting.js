@@ -9,6 +9,7 @@ var express = require('express'),
 
 exports.RouteModel = function(databaseConfig){
     this.fields = [];
+    this.geometryField = '';
     this.databaseConfig = databaseConfig;
     this.connectionString = util.format('postgres://%s:%s@%s/%s',
         databaseConfig.username,
@@ -63,11 +64,10 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
                 })
 
                 }, cb);
-        }, function(points, cb){
-            var query = util.format("SELECT gid FROM routing.ways");
+        }, function(pointIds, cb){
+            var query = util.format("SELECT * FROM routing.get_route_by_id(%s, %s, %s)", pointIds[0], pointIds[1], restrictions);
             client.query(query, [], function(err, result){
                 if (err != null) cb(err);
-
                 var routes = [];
                 for (var r in result.rows){
                     routes.push(new RouteFeature(result.rows[r]))
@@ -81,7 +81,10 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
             client.end();
 
             if (err == null){
-                callback(undefined, data);
+                callback(undefined, {
+                    "type": "FeatureCollection",
+                    "features": data
+                });
             } else {
                 callback(err);
             }
