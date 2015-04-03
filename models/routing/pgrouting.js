@@ -27,14 +27,18 @@ function RouteFeature(routeFeatureInfo){
     this.type = 'Feature';
     this.geometry = {};
     this.properties = {
-        gid: undefined
+        gid: undefined,
+        name: undefined,
+        seq: undefined,
+        heading: undefined,
+        cost: undefined
     };
 
     for (var p in routeFeatureInfo){
         if (this.properties.hasOwnProperty(p) && p !== 'geometry'){
             this.properties[p] = routeFeatureInfo[p];
         } else if (p === 'geometry'){
-            this.geometry = routeFeatureInfo.geometry;
+            this.geometry = JSON.parse(routeFeatureInfo.geometry);
         }
     }
 }
@@ -65,14 +69,22 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
 
                 }, cb);
         }, function(pointIds, cb){
-            var query = util.format("SELECT * FROM routing.get_route_by_id(%s, %s, %s)", pointIds[0], pointIds[1], restrictions);
+            var query = util.format("SELECT seq, gid, name, heading, cost, ST_AsGeoJson(geom) geometry FROM routing.get_route_by_id(%s, %s)", pointIds[0], pointIds[1]);
+            console.log(query);
             client.query(query, [], function(err, result){
-                if (err != null) cb(err);
-                var routes = [];
-                for (var r in result.rows){
-                    routes.push(new RouteFeature(result.rows[r]))
+                if (err != null) {
+                    cb(err);
                 }
-                cb(undefined, routes);
+                else if (result == null) {
+                    cb('Cannot build route.');
+                }
+                else {
+                    var routes = [];
+                    for (var r in result.rows){
+                        routes.push(new RouteFeature(result.rows[r]))
+                    }
+                    cb(undefined, routes);
+                }
 
             });
         }], function(err, data){
