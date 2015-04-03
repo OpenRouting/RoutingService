@@ -11,8 +11,7 @@ block content
          div(class="form-group")
             label(for="routePoints", class="col-sm-2 control-label")= 'Points'
             div(class="col-sm-10")
-               textarea(class="form-control", id="routePoints", placeholder="Insert GeoJSON points", name="routepoints")
-
+               textarea(class="form-control", id="routePoints", placeholder="Insert GeoJSON points", name="routepoints")= '{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-77.0451861,38.928573]},"properties":{"name":"start point"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-77.0507123,38.9306636]},"properties":{"name":"end point"}}]}'
          div(class="form-group")
             label(for="routeRestrictions", class="col-sm-2 control-label")= 'Restrictions'
             div(class="col-sm-10")
