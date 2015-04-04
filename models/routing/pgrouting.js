@@ -48,9 +48,11 @@ function RouteFeature(routeFeatureInfo){
  * @param points - GeoJSON points
  * @param restrictions - Array of restriction variables
  * @param callback
+ * @param doUnion - If true then unionize route into a single line feature. Otherwise return feature set
  */
-exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback){
+exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback, doUnion){
     var self = this;
+    // Parse directions into a proper postgres string format
     var parsedRestrictions = [];
     if (restrictions instanceof Array){
         for (var i in restrictions){
@@ -58,6 +60,11 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
         }
     } else {
         parsedRestrictions.push(util.format("'%s'", restrictions))
+    }
+
+    // Determine whether to union resultinto a single line
+    if (doUnion == undefined){
+        doUnion = false
     }
 
 
@@ -78,25 +85,48 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
 
                 }, cb);
         }, function(pointIds, cb){
-            var query = util.format("SELECT seq, gid, name, heading, cost, ST_AsGeoJson(geom) geometry FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
-            console.log(query);
-            client.query(query, [], function(err, result){
-                if (err != null) {
-                    cb(err);
-                }
-                else if (result == null) {
-                    cb('Cannot build route.');
-                }
-                else {
-                    var routes = [];
-                    for (var r in result.rows){
-                        routes.push(new RouteFeature(result.rows[r]))
-                    }
-                    cb(undefined, routes);
-                }
 
-            });
-        }], function(err, data){
+            if (doUnion){
+                var query = util.format("SELECT sum(cost), ST_AsGeoJson(ST_Multi(ST_Union(geom))) geometry FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+                console.log(query);
+                client.query(query, [], function (err, result) {
+                    if (err != null) {
+                        cb(err);
+                    }
+                    else if (result == null) {
+                        cb('Cannot build route.');
+                    }
+                    else {
+                        var routes = [];
+                        for (var r in result.rows) {
+                            routes.push(new RouteFeature(result.rows[r]))
+                        }
+                        cb(undefined, routes);
+                    }
+
+                });
+            } else {
+                var query = util.format("SELECT seq, gid, name, heading, cost, ST_AsGeoJson(geom) geometry FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+                console.log(query);
+                client.query(query, [], function (err, result) {
+                    if (err != null) {
+                        cb(err);
+                    }
+                    else if (result == null) {
+                        cb('Cannot build route.');
+                    }
+                    else {
+                        var routes = [];
+                        for (var r in result.rows) {
+                            routes.push(new RouteFeature(result.rows[r]))
+                        }
+                        cb(undefined, routes);
+                    }
+
+                });
+            }
+        }
+        ], function(err, data){
 
             done();
             client.end();
