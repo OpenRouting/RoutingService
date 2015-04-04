@@ -11,7 +11,7 @@ exports.DirectionController = function(modelFactory){
     this.waypoint = modelFactory.getTableModel('waypoint')
 };
 
-exports.RouteController.prototype.getDirection = function(routeType, points, restrictions, callback){
+exports.DirectionController.prototype.getDirection = function(routeType, points, restrictions, callback){
     async.waterfall([
         function(cb){
             this.routeModels[routeType].buildRoute(points, restrictions, cb)
