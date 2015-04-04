@@ -74,6 +74,7 @@ exports.TableModel.prototype.getSpatialField = function() {
  */
 exports.TableModel.prototype.query = function(query, parameters, callback){
     var self = this;
+    console.log(query);
     pg.connect(this.connectionString, function(err, client, done) {
         if(err) {
             callback({message: 'error fetching client from pool' + err});
@@ -130,5 +131,5 @@ exports.TableModel.prototype.intersects = function(geometry, callback){
         this.table,
         this.getSpatialField(),
         JSON.stringify(geometry)
-    ), callback)
+    ), [], callback)
 };
