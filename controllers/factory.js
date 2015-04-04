@@ -10,24 +10,40 @@ var ModelFactory = require('../models/factory').ModelFactory,
 exports.ControllerFactory = function(modelFactory) {
     'use strict';
     this.modelFactory = modelFactory || new ModelFactory();
+    this.routeController = undefined;
+    this.directionController = undefined;
+    this.documentationController = undefined;
+    this.tableController = undefined;
 };
 
 exports.ControllerFactory.prototype.getDocumentationController = function(){
     'use strict';
-    return new DocumentationController(this.modelFactory);
+    if (this.documentationController == null){
+        this.documentationController = new DocumentationController(this.modelFactory);
+    }
+    return this.documentationController
 };
 
 exports.ControllerFactory.prototype.getTableController = function(){
     'use strict';
-    return new TableController(this.modelFactory);
+    if (this.tableController == null){
+        this.tableController = new TableController(this.modelFactory);
+    }
+    return this.tableController
 };
 
 exports.ControllerFactory.prototype.getRouteController = function(){
     'use strict';
-    return new RouteController(this.modelFactory);
+    if (this.routeController == null){
+        this.routeController = new RouteController(this.modelFactory);
+    }
+    return this.routeController
 };
 
 exports.ControllerFactory.prototype.getDirectionController = function(){
     'use strict';
-    return new DirectionController(this.modelFactory);
+    if (this.directionController == null){
+        this.directionController = new DirectionController(this.modelFactory);
+    }
+    return this.directionController
 };
