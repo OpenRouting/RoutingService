@@ -35,6 +35,16 @@ exports.settings = {
                 name: 'the_geom',
                 type: 'point'
             }]
+        },
+        waypoint: {
+            name: 'routing.ways_vertices_pgr',
+            fields: [{
+                name: 'id',
+                type: 'int'
+            },{
+                name: 'the_geom',
+                type: 'point'
+            }]
         }
     }
 };
