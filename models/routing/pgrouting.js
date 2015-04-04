@@ -51,6 +51,15 @@ function RouteFeature(routeFeatureInfo){
  */
 exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback){
     var self = this;
+    var parsedRestrictions = [];
+    if (restrictions instanceof Array){
+        for (var i in restrictions){
+            parsedRestrictions.push(util.format("'%s'", restrictions[i]))
+        }
+    } else {
+        parsedRestrictions.push(util.format("'%s'", restrictions))
+    }
+
 
     pg.connect(this.connectionString, function(err, client, done) {
         if(err) {
@@ -69,7 +78,7 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
 
                 }, cb);
         }, function(pointIds, cb){
-            var query = util.format("SELECT seq, gid, name, heading, cost, ST_AsGeoJson(geom) geometry FROM routing.get_route_by_id(%s, %s)", pointIds[0], pointIds[1]);
+            var query = util.format("SELECT seq, gid, name, heading, cost, ST_AsGeoJson(geom) geometry FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
             console.log(query);
             client.query(query, [], function(err, result){
                 if (err != null) {
