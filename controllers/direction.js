@@ -15,7 +15,8 @@ exports.DirectionController.prototype.getDirection = function(routeType, points,
     var self = this;
     async.waterfall([
         function(cb){
-            self.routeModels[routeType].buildRoute(points, restrictions, cb)
+            var doUnion = true;
+            self.routeModels[routeType].buildRoute(points, restrictions, cb, doUnion)
         },
         function(routeGeometry, cb){
             self.waypoint.intersects(routeGeometry, function(err, data){
