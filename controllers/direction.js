@@ -4,7 +4,7 @@
 var express = require('express'),
     async = require('async');
 
-exports.DirectionController = function(modelFactory){
+exports.DirectionController = function(modelFactory, a){
     this.routeModels = {
         pgRouteModel: modelFactory.getRouteModel('pgrouting')
     };
@@ -12,12 +12,13 @@ exports.DirectionController = function(modelFactory){
 };
 
 exports.DirectionController.prototype.getDirection = function(routeType, points, restrictions, callback){
+    var self = this;
     async.waterfall([
         function(cb){
-            this.routeModels[routeType].buildRoute(points, restrictions, cb)
+            self.routeModels[routeType].buildRoute(points, restrictions, cb)
         },
         function(routeGeometry, cb){
-            this.waypoint.intersects(routeGeometry, function(err, data){
+            self.waypoint.intersects(routeGeometry, function(err, data){
                 if (err != null){
                     cb(err)
                 } else {
