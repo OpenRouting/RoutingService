@@ -8,7 +8,7 @@ var express = require('express'),
     settings = require('../settings').settings;
 
 exports.routeUIHandler = function (req, res) {
-    res.render('route', {title:'Routing Engine', restrictions: settings.routing.restrictions});
+    res.render('route', {title:'Routing Engine', restrictions: settings.routing.restrictions, postUrl: '/api/v1/route'});
 };
 
 exports.routeHandler = function (req, res) {

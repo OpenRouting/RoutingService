@@ -7,13 +7,12 @@ var express = require('express'),
     directionController = controllerFactory.getDirectionController(),
     settings = require('../settings').settings;
 
-exports.routeUIHandler = function (req, res) {
-    res.render('route', {title:'Routing Engine', restrictions: settings.routing.restrictions});
+exports.directionUIHandler = function (req, res) {
+    res.render('route', {title:'Routing Engine', restrictions: settings.routing.restrictions, postUrl: '/api/v1/direction'});
 };
 
 
 exports.directionHandler = function (req, res) {
-
     var restrictions;
     var points;
 
