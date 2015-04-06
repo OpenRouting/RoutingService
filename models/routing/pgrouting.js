@@ -31,7 +31,8 @@ function RouteFeature(routeFeatureInfo){
         name: undefined,
         seq: undefined,
         heading: undefined,
-        cost: undefined
+        cost: undefined,
+        fromid: undefined
     };
 
     for (var p in routeFeatureInfo){
@@ -106,7 +107,7 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
 
                 });
             } else {
-                var query = util.format("SELECT seq, gid, name, heading, cost, ST_AsGeoJson(geom) geometry FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+                var query = util.format("SELECT seq, gid, name, heading, costlength, costtime, ST_AsGeoJson(geom) geometry FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
                 console.log(query);
                 client.query(query, [], function (err, result) {
                     if (err != null) {
@@ -129,7 +130,7 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
         ], function(err, data){
 
             done();
-            client.end();
+            //client.end();
 
             if (err == null){
                 callback(undefined, {
@@ -141,6 +142,27 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
             }
         });
     });
+
+};
+
+exports.RouteModel.prototype.buildDirection = function(points, restrictions, callback){
+    var self = this;
+    async.waterfall([
+        function(cb){
+            self.buildRoute(points, restrictions, cb);
+        },
+        function(routes, cb){
+            // Perform a join between waypoint table and this route and order the
+            // selected waypoints by seq of the route
+            cb(routes);
+        }
+    ], function(err, data){
+        if (err != undefined){
+            callback(err)
+        } else {
+            callback(undefined, data);
+        }
+    })
 
 };
 

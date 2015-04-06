@@ -6,7 +6,7 @@ exports.settings = {
         username: process.env.username || 'dev',
         password: process.env.password || 'devP@a$$word',
         hostname: process.env.hostname || 'localhost',
-        database: process.env.database || 'osm'
+        database: process.env.database || 'routing'
     },
     routing: {
         restrictions: {
@@ -17,17 +17,17 @@ exports.settings = {
     },
     tables: {
         ways: {
-            name: 'routing.ways',
+            name: 'routing.way',
             fields: [{
-                name: 'gid',
+                name: 'objectid',
                 type: 'int'
             },{
-                name: 'the_geom',
+                name: 'shape',
                 type: 'line'
             }]
         },
         ways_vertices_pgr: {
-            name: 'routing.ways_vertices_pgr',
+            name: 'routing.way_vertices_pgr',
             fields: [{
                 name: 'id',
                 type: 'int'
@@ -37,13 +37,28 @@ exports.settings = {
             }]
         },
         waypoint: {
-            name: 'routing.ways_vertices_pgr',
+            name: 'routing.waypoint',
+            srid: 4326,
             fields: [{
-                name: 'id',
+                name: 'objectid',
                 type: 'int'
             },{
-                name: 'the_geom',
+                name: 'shape',
                 type: 'point'
+            }]
+        },
+        poi: {
+            name: 'routing.waypoint',
+            srid: 4326,
+            fields: [{
+                name: 'objectid',
+                type: 'int'
+            },{
+                name: 'shape',
+                type: 'point'
+            },{
+                name: 'name',
+                type: 'string'
             }]
         }
     }

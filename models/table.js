@@ -30,6 +30,7 @@ exports.TableModel = function(tableConfig, databaseConfig){
 
     this.table = tableConfig.name;
     this.fields = tableConfig.fields;
+    this.srid = tableConfig.srid;
     this.connectionString = util.format('postgres://%s:%s@%s/%s',
                                         databaseConfig.username,
                                         databaseConfig.password,
@@ -74,7 +75,7 @@ exports.TableModel.prototype.getSpatialField = function() {
  */
 exports.TableModel.prototype.query = function(query, parameters, callback){
     var self = this;
-    console.log(query);
+    //console.log(query);
     pg.connect(this.connectionString, function(err, client, done) {
         if(err) {
             callback({message: 'error fetching client from pool' + err});
@@ -82,6 +83,7 @@ exports.TableModel.prototype.query = function(query, parameters, callback){
         client.query(query, parameters, function(err, result) {
             done();
             if (err != null){
+                console.log(err);
                 callback({message: err});
             }
             else {
@@ -126,10 +128,13 @@ exports.TableModel.prototype.getRecords = function(callback){
  * @param callback
  */
 exports.TableModel.prototype.intersects = function(geometry, callback){
-    this.query(util.format('SELECT %s FROM %s WHERE ST_3DIntersects(%s, ST_GeomFromGeoJSON(%s))',
+    console.log(this.srid);
+    this.query(util.format("SELECT %s FROM %s WHERE ST_3DIntersects(ST_SetSRID(%s, %s), ST_SetSRID(ST_GeomFromGeoJSON('%s'),%s))",
         this.getFieldNames().join(','),
         this.table,
         this.getSpatialField(),
-        JSON.stringify(geometry)
+        this.srid,
+        JSON.stringify(geometry),
+        this.srid
     ), [], callback)
 };
