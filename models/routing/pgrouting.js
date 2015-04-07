@@ -23,19 +23,37 @@ exports.RouteModel = function(databaseConfig){
  * @param routeFeatureInfo
  * @constructor
  */
-function DirectionFeature(routeFeatureInfo){
+function DirectionFeature(routeFeatureInfo, type){
     this.type = 'Feature';
     this.geometry = {};
     this.properties = {
-        name: undefined,
-        seq: undefined
+        direction_text: undefined,
+        direction_type: undefined,
+        seq: undefined,
+        distance:0,
+        floor:undefined,
+        time: 0
     };
+    if (type === 'start'){
+        this.properties.direction_text = 'Start at ' + routeFeatureInfo.properties.name;
+    }
+    else if (type === 'end'){
+        this.properties.direction_text = 'End at ' + routeFeatureInfo.properties.name;
+    }
+    else {
+        this.properties.direction_text = 'Go Through ' + routeFeatureInfo.name;
+    }
 
     for (var p in routeFeatureInfo){
-        if (this.properties.hasOwnProperty(p) && p !== 'geometry'){
+        if (this.properties.hasOwnProperty(p) && p !== 'geometry' && p !== 'geom'){
             this.properties[p] = routeFeatureInfo[p];
-        } else if (p === 'geometry'){
-            this.geometry = JSON.parse(routeFeatureInfo.geometry);
+        } else if (p === 'geometry' || p === 'geom'){
+            if (routeFeatureInfo[p] instanceof Object){
+                this.geometry = routeFeatureInfo[p]
+            } else {
+                this.geometry = JSON.parse(routeFeatureInfo[p]);
+
+            }
         }
     }
 }
@@ -146,7 +164,7 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
 
 };
 
-exports.RouteModel.prototype.buildDirection = function(points, restrictions, callback){
+exports.RouteModel.prototype.buildDirection = function(inputPoints, restrictions, callback){
     var self = this;
     var self = this;
     // Parse directions into a proper postgres string format
@@ -165,7 +183,7 @@ exports.RouteModel.prototype.buildDirection = function(points, restrictions, cal
         }
         async.waterfall([
             function (cb) {
-                async.map(points.features, function (item, cbeach) {
+                async.map(inputPoints.features, function (item, cbeach) {
                     var query = util.format("SELECT routing.get_waypoint(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON('%s'), 4326), (SELECT Find_SRID('routing', 'way', 'shape'))))", JSON.stringify(item.geometry));
                     client.query(query, [], function (err, result) {
                         if (err == null) {
@@ -199,7 +217,7 @@ exports.RouteModel.prototype.buildDirection = function(points, restrictions, cal
             function (routes, pointIds, cb) {
                 // Perform a join between waypoint table and this route and order the
                 // selected waypoints by seq of the route
-                var query = util.format("SELECT * FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[]) route, routing.waypoint WHERE route.source = waypoint.sourceid", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+                var query = util.format("SELECT ST_AsGeoJson(ST_Transform(waypoint.SHAPE, 4326)) geometry, waypoint.name, route.seq  FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[]) route, routing.waypoint WHERE route.source = waypoint.sourceid", pointIds[0], pointIds[1], parsedRestrictions.join(','));
                 console.log(query);
                 client.query(query, [], function (err, result) {
                     if (err != null) {
@@ -210,10 +228,16 @@ exports.RouteModel.prototype.buildDirection = function(points, restrictions, cal
                     }
                     else {
                         var directions = [];
+
+                        directions.push(new DirectionFeature(inputPoints.features[0], 'start'));
+
                         for (var r in result.rows) {
                             directions.push(new DirectionFeature(result.rows[r]))
                         }
-                        cb(undefined, {routes: routes, directions: directions});
+                        directions.push(new DirectionFeature(inputPoints.features[1], 'end'));
+
+                        cb(undefined, {routes: {"type": "FeatureCollection", "features": routes},
+                                       directions: {"type": "FeatureCollection", "features": directions}});
                     }
 
                 });
