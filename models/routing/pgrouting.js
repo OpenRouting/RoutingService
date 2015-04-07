@@ -75,7 +75,7 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
         }
         async.waterfall([function(cb){
             async.map(points.features, function(item, cbeach){
-                var query = util.format("SELECT routing.get_waypoint(ST_GeomFromGeoJSON('%s'))", JSON.stringify(item.geometry));
+                var query = util.format("SELECT routing.get_waypoint(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON('%s'), 4326), (SELECT Find_SRID('routing', 'way', 'shape'))))", JSON.stringify(item.geometry));
                 client.query(query, [], function(err, result) {
                     if (err == null){
                         cbeach(undefined, result.rows[0].get_waypoint);

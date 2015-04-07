@@ -16,8 +16,13 @@ exports.directionHandler = function (req, res) {
     var restrictions;
     var points;
 
+
     try {
-        points = JSON.parse(req.body.routepoints);
+        if (req.body.routepoints instanceof Object){
+            points = req.body.routepoints;
+        } else {
+            points = JSON.parse(req.body.routepoints);
+        }
     } catch(err){
         res.status(400).json({message: 'Invalid GeoJson passed into routing service: ' + req.body.routepoints});
         return;
