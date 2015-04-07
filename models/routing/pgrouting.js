@@ -23,6 +23,28 @@ exports.RouteModel = function(databaseConfig){
  * @param routeFeatureInfo
  * @constructor
  */
+function DirectionFeature(routeFeatureInfo){
+    this.type = 'Feature';
+    this.geometry = {};
+    this.properties = {
+        name: undefined,
+        seq: undefined
+    };
+
+    for (var p in routeFeatureInfo){
+        if (this.properties.hasOwnProperty(p) && p !== 'geometry'){
+            this.properties[p] = routeFeatureInfo[p];
+        } else if (p === 'geometry'){
+            this.geometry = JSON.parse(routeFeatureInfo.geometry);
+        }
+    }
+}
+
+/**
+ * Factory for building route features as GeoJson
+ * @param routeFeatureInfo
+ * @constructor
+ */
 function RouteFeature(routeFeatureInfo){
     this.type = 'Feature';
     this.geometry = {};
@@ -31,8 +53,9 @@ function RouteFeature(routeFeatureInfo){
         name: undefined,
         seq: undefined,
         heading: undefined,
-        cost: undefined,
-        fromid: undefined
+        costlength: undefined,
+        costtime: undefined,
+        source: undefined
     };
 
     for (var p in routeFeatureInfo){
@@ -86,46 +109,24 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
 
                 }, cb);
         }, function(pointIds, cb){
+            var query = util.format("SELECT seq, gid, name, heading, costlength, costtime, ST_AsGeoJson(ST_Transform(geom, 4326)) geometry, source FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+            console.log(query);
+            client.query(query, [], function (err, result) {
+                if (err != null) {
+                    cb(err);
+                }
+                else if (result == null) {
+                    cb('Cannot build route.');
+                }
+                else {
+                    var routes = [];
+                    for (var r in result.rows) {
+                        routes.push(new RouteFeature(result.rows[r]))
+                    }
+                    cb(undefined, routes);
+                }
 
-            if (doUnion){
-                var query = util.format("SELECT sum(cost), ST_AsGeoJson(ST_Multi(ST_Union(geom))) geometry FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
-                console.log(query);
-                client.query(query, [], function (err, result) {
-                    if (err != null) {
-                        cb(err);
-                    }
-                    else if (result == null) {
-                        cb('Cannot build route.');
-                    }
-                    else {
-                        var routes = [];
-                        for (var r in result.rows) {
-                            routes.push(new RouteFeature(result.rows[r]))
-                        }
-                        cb(undefined, routes);
-                    }
-
-                });
-            } else {
-                var query = util.format("SELECT seq, gid, name, heading, costlength, costtime, ST_AsGeoJson(geom) geometry FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
-                console.log(query);
-                client.query(query, [], function (err, result) {
-                    if (err != null) {
-                        cb(err);
-                    }
-                    else if (result == null) {
-                        cb('Cannot build route.');
-                    }
-                    else {
-                        var routes = [];
-                        for (var r in result.rows) {
-                            routes.push(new RouteFeature(result.rows[r]))
-                        }
-                        cb(undefined, routes);
-                    }
-
-                });
-            }
+            });
         }
         ], function(err, data){
 
@@ -147,22 +148,83 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
 
 exports.RouteModel.prototype.buildDirection = function(points, restrictions, callback){
     var self = this;
-    async.waterfall([
-        function(cb){
-            self.buildRoute(points, restrictions, cb);
-        },
-        function(routes, cb){
-            // Perform a join between waypoint table and this route and order the
-            // selected waypoints by seq of the route
-            cb(routes);
+    var self = this;
+    // Parse directions into a proper postgres string format
+    var parsedRestrictions = [];
+    if (restrictions instanceof Array){
+        for (var i in restrictions){
+            parsedRestrictions.push(util.format("'%s'", restrictions[i]))
         }
-    ], function(err, data){
-        if (err != undefined){
-            callback(err)
-        } else {
-            callback(undefined, data);
-        }
-    })
+    } else {
+        parsedRestrictions.push(util.format("'%s'", restrictions))
+    }
 
+    pg.connect(this.connectionString, function(err, client, done) {
+        if (err) {
+            callback({message: 'error fetching client from pool' + err});
+        }
+        async.waterfall([
+            function (cb) {
+                async.map(points.features, function (item, cbeach) {
+                    var query = util.format("SELECT routing.get_waypoint(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON('%s'), 4326), (SELECT Find_SRID('routing', 'way', 'shape'))))", JSON.stringify(item.geometry));
+                    client.query(query, [], function (err, result) {
+                        if (err == null) {
+                            cbeach(undefined, result.rows[0].get_waypoint);
+                        } else {
+                            cbeach(err);
+                        }
+                    })
+
+                }, cb);
+            }, function (pointIds, cb) {
+                var query = util.format("SELECT seq, gid, name, heading, costlength, costtime, ST_AsGeoJson(ST_Transform(geom, 4326)) geometry, source FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+                console.log(query);
+                client.query(query, [], function (err, result) {
+                    if (err != null) {
+                        cb(err);
+                    }
+                    else if (result == null) {
+                        cb('Cannot build route.');
+                    }
+                    else {
+                        var routes = [];
+                        for (var r in result.rows) {
+                            routes.push(new RouteFeature(result.rows[r]))
+                        }
+                        cb(undefined, routes, pointIds);
+                    }
+
+                });
+            },
+            function (routes, pointIds, cb) {
+                // Perform a join between waypoint table and this route and order the
+                // selected waypoints by seq of the route
+                var query = util.format("SELECT * FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[]) route, routing.waypoint WHERE route.source = waypoint.sourceid", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+                console.log(query);
+                client.query(query, [], function (err, result) {
+                    if (err != null) {
+                        cb(err);
+                    }
+                    else if (result == null) {
+                        cb('Cannot build route.');
+                    }
+                    else {
+                        var directions = [];
+                        for (var r in result.rows) {
+                            directions.push(new DirectionFeature(result.rows[r]))
+                        }
+                        cb(undefined, {routes: routes, directions: directions});
+                    }
+
+                });
+            }
+        ], function (err, data) {
+            if (err == null) {
+                callback(undefined, data);
+            } else {
+                callback(err)
+            }
+        })
+    });
 };
 
