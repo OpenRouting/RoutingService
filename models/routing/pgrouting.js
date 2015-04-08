@@ -128,7 +128,7 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
                 }, cb);
         }, function(pointIds, cb){
             var query = util.format("SELECT seq, gid, name, heading, costlength, costtime, ST_AsGeoJson(ST_Transform(geom, 4326)) geometry, source FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
-            console.log(query);
+            //console.log(query);
             client.query(query, [], function (err, result) {
                 if (err != null) {
                     cb(err);
@@ -196,7 +196,7 @@ exports.RouteModel.prototype.buildDirection = function(inputPoints, restrictions
                 }, cb);
             }, function (pointIds, cb) {
                 var query = util.format("SELECT seq, gid, name, heading, costlength, costtime, ST_AsGeoJson(ST_Transform(geom, 4326)) geometry, source FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[])", pointIds[0], pointIds[1], parsedRestrictions.join(','));
-                console.log(query);
+                //console.log(query);
                 client.query(query, [], function (err, result) {
                     if (err != null) {
                         cb(err);
@@ -217,8 +217,8 @@ exports.RouteModel.prototype.buildDirection = function(inputPoints, restrictions
             function (routes, pointIds, cb) {
                 // Perform a join between waypoint table and this route and order the
                 // selected waypoints by seq of the route
-                var query = util.format("SELECT ST_AsGeoJson(ST_Transform(waypoint.SHAPE, 4326)) geometry, waypoint.name, route.seq  FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[]) route, routing.waypoint WHERE route.source = waypoint.sourceid", pointIds[0], pointIds[1], parsedRestrictions.join(','));
-                console.log(query);
+                var query = util.format("SELECT ST_AsGeoJson(ST_Transform(waypoint.SHAPE, 4326)) geometry, waypoint.name, route.seq, waypoint.floor, waypoint.facilityid, waypoint.floor, waypoint.waypointclass  FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[]) route, routing.waypoint WHERE route.source = waypoint.sourceid", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+                //console.log(query);
                 client.query(query, [], function (err, result) {
                     if (err != null) {
                         cb(err);
