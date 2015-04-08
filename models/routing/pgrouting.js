@@ -90,9 +90,8 @@ function RouteFeature(routeFeatureInfo){
  * @param points - GeoJSON points
  * @param restrictions - Array of restriction variables
  * @param callback
- * @param doUnion - If true then unionize route into a single line feature. Otherwise return feature set
  */
-exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback, doUnion){
+exports.RouteModel.prototype.buildRoute = function(points, restrictions, callback){
     var self = this;
     // Parse directions into a proper postgres string format
     var parsedRestrictions = [];
@@ -103,12 +102,6 @@ exports.RouteModel.prototype.buildRoute = function(points, restrictions, callbac
     } else {
         parsedRestrictions.push(util.format("'%s'", restrictions))
     }
-
-    // Determine whether to union resultinto a single line
-    if (doUnion == undefined){
-        doUnion = false
-    }
-
 
     pg.connect(this.connectionString, function(err, client, done) {
         if(err) {
