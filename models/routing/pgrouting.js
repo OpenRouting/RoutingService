@@ -162,15 +162,18 @@ exports.RouteModel.prototype.buildDirection = function(inputPoints, restrictions
                     else {
                         var directions = [];
 
-                        directions.push(new DirectionFeature(inputPoints.features[0], 'start'));
+                        inputPoints.features[0].waypoint_type = 'start';
+                        directions.push(new DirectionFeature(inputPoints.features[0]));
 
                         for (var r in result.rows) {
                             directions.push(new DirectionFeature(result.rows[r]))
                         }
+
+                        inputPoints.features[1].waypoint_type = 'end';
                         directions.push(new DirectionFeature(inputPoints.features[1], 'end'));
 
                         cb(undefined, {routes: {"type": "FeatureCollection", "features": routes},
-                                       directions: {"type": "FeatureCollection", "features": directions}});
+                                       directions: {"type": "FeatureCollection", "features": directionList(directions)}});
                     }
 
                 });

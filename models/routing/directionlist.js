@@ -15,11 +15,12 @@ exports.directionList = function(directions){
     for (var i = (directions.length - 1); i >= 0; i--){
         // if direction name is the same as next then skip and aggregate
         if ((i !== 0 && directions[i].properties.direction_text === directions[i-1].properties.direction_text) ||
-            (i !== 0 && i !== directions.length && directions[i].properties.facilityid === directions[i-1].properties.facilityid && directions[i].properties.facilityid === directions[i+1].properties.facilityid)){
+            (i !== 0 && i !== (directions.length-1) && directions[i].properties.facilityid === directions[i-1].properties.facilityid && directions[i].properties.facilityid === directions[i+1].properties.facilityid)){
             totalDistance += directions[i].properties.distance;
             totalTime += directions[i].properties.time;
-        } else if (i !== 0 && i !== directions.length && directions[i].properties.facilityid === directions[i-1].properties.facilityid && directions[i].properties.facilityid !== directions[i+1].properties.facilityid){
+        } else if (i !== 0 && i !== (directions.length-1) && directions[i].properties.facilityid === directions[i-1].properties.facilityid && directions[i].properties.facilityid !== directions[i+1].properties.facilityid){
             directions[i].properties.direction_text = title('Exit ' + directions[i].properties.waypoint_type + ' on Floor ' + directions[i].properties.floor);
+            directions[i].properties.direction_type = util.format('%s_exit', directions[i].properties.waypoint_type.toLowerCase());
             cleanedDirections.push(directions[i])
 
         } else {
@@ -28,11 +29,18 @@ exports.directionList = function(directions){
 
             if (floorTransitionType.indexOf(directions[i].properties.waypoint_type) >= 0){
                 directions[i].properties.direction_text = util.format('Enter %s on Floor %s', directions[i].properties.waypoint_type, directions[i].properties.floor);
-            } else if (startEndType.indexOf(directions[i].properties.waypoint_type) >= 0){
-                directions[i].properties.direction_text = util.format('%s at %s', directions[i].properties.waypoint_type, directions[i].properties.direction_text);
+                directions[i].properties.direction_type = directions[i].properties.waypoint_type.toLowerCase();
+            } else if (directions[i].properties.waypoint_type === 'start'){
+                directions[i].properties.direction_text = util.format('Start at %s', directions[i].properties.direction_text);
+                directions[i].properties.direction_type = 'depart';
+            } else if (directions[i].properties.waypoint_type === 'end'){
+                directions[i].properties.direction_text = util.format('Arrive at %s', directions[i].properties.direction_text);
+                directions[i].properties.direction_type = 'arrive';
             }
             else {
                 directions[i].properties.direction_text = util.format('Go through %s', directions[i].properties.direction_text);
+                directions[i].properties.direction_type = 'continue';
+
             }
 
             directions[i].properties.direction_text = title(directions[i].properties.direction_text);
