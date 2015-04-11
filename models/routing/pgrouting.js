@@ -6,8 +6,9 @@ var express = require('express'),
     util = require('util'),
     pg = require('pg'),
     async = require('async'),
-    RouteFeature = require('routefeature').RouteFeature,
-    DirectionFeature = require('directionfeature').DirectionFeature;
+    RouteFeature = require('./routefeature').RouteFeature,
+    DirectionFeature = require('./directionfeature').DirectionFeature,
+    directionList = require('./directionlist').directionList;
 
 exports.RouteModel = function(databaseConfig){
     this.fields = [];
@@ -145,7 +146,11 @@ exports.RouteModel.prototype.buildDirection = function(inputPoints, restrictions
             function (routes, pointIds, cb) {
                 // Perform a join between waypoint table and this route and order the
                 // selected waypoints by seq of the route
-                var query = util.format("SELECT ST_AsGeoJson(ST_Transform(waypoint.SHAPE, 4326)) geometry, waypoint.name, route.seq, waypoint.floor, waypoint.facilityid, waypoint.floor, waypoint.waypointclass  FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[]) route, routing.waypoint WHERE route.source = waypoint.sourceid", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+                var query = util.format("SELECT ST_AsGeoJson(ST_Transform(waypoint.SHAPE, 4326)) geometry, waypoint.name, " +
+                "route.seq, waypoint.floor, waypoint.facilityid, waypoint.floor, waypoint.waypointclass  " +
+                "FROM routing.get_route_by_id(%s, %s, ARRAY[%s]::text[]) route, routing.waypoint " +
+                "WHERE route.source = waypoint.sourceid", pointIds[0], pointIds[1], parsedRestrictions.join(','));
+
                 //console.log(query);
                 client.query(query, [], function (err, result) {
                     if (err != null) {
