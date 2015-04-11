@@ -5,7 +5,9 @@
 var express = require('express'),
     util = require('util'),
     pg = require('pg'),
-    async = require('async');
+    async = require('async'),
+    RouteFeature = require('routefeature').RouteFeature,
+    DirectionFeature = require('directionfeature').DirectionFeature;
 
 exports.RouteModel = function(databaseConfig){
     this.fields = [];
@@ -17,73 +19,6 @@ exports.RouteModel = function(databaseConfig){
         databaseConfig.hostname,
         databaseConfig.database);
 };
-
-/**
- * Factory for building route features as GeoJson
- * @param routeFeatureInfo
- * @constructor
- */
-function DirectionFeature(routeFeatureInfo, type){
-    this.type = 'Feature';
-    this.geometry = {};
-    this.properties = {
-        direction_text: undefined,
-        direction_type: undefined,
-        seq: undefined,
-        distance:0,
-        floor:undefined,
-        time: 0
-    };
-    if (type === 'start'){
-        this.properties.direction_text = 'Start at ' + routeFeatureInfo.properties.name;
-    }
-    else if (type === 'end'){
-        this.properties.direction_text = 'End at ' + routeFeatureInfo.properties.name;
-    }
-    else {
-        this.properties.direction_text = 'Go Through ' + routeFeatureInfo.name;
-    }
-
-    for (var p in routeFeatureInfo){
-        if (this.properties.hasOwnProperty(p) && p !== 'geometry' && p !== 'geom'){
-            this.properties[p] = routeFeatureInfo[p];
-        } else if (p === 'geometry' || p === 'geom'){
-            if (routeFeatureInfo[p] instanceof Object){
-                this.geometry = routeFeatureInfo[p]
-            } else {
-                this.geometry = JSON.parse(routeFeatureInfo[p]);
-
-            }
-        }
-    }
-}
-
-/**
- * Factory for building route features as GeoJson
- * @param routeFeatureInfo
- * @constructor
- */
-function RouteFeature(routeFeatureInfo){
-    this.type = 'Feature';
-    this.geometry = {};
-    this.properties = {
-        gid: undefined,
-        name: undefined,
-        seq: undefined,
-        heading: undefined,
-        costlength: undefined,
-        costtime: undefined,
-        source: undefined
-    };
-
-    for (var p in routeFeatureInfo){
-        if (this.properties.hasOwnProperty(p) && p !== 'geometry'){
-            this.properties[p] = routeFeatureInfo[p];
-        } else if (p === 'geometry'){
-            this.geometry = JSON.parse(routeFeatureInfo.geometry);
-        }
-    }
-}
 
 /**
  *
